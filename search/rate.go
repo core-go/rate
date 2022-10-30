@@ -1,4 +1,4 @@
-package searchrate
+package search
 
 import (
 	"database/sql/driver"

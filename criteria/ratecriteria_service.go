@@ -1,4 +1,4 @@
-package ratecriteria
+package criteria
 
 import (
 	"context"
@@ -94,7 +94,6 @@ type rateCriteriaService struct {
 }
 
 func (s *rateCriteriaService) Rate(ctx context.Context, rate *RateCriteria) (int64, error) {
-
 	// check exist
 	var info int
 	query := fmt.Sprintf("select count(*) from %s where %s = $1", s.FullInfoTableName, s.FullInfoIdCol)

@@ -1,4 +1,4 @@
-package searchrate
+package search
 
 import (
 	"context"
@@ -8,14 +8,14 @@ import (
 	"github.com/core-go/search"
 )
 
-type SearchRateHandler interface {
+type RateSearchHandler interface {
 	Search(w http.ResponseWriter, r *http.Request)
 }
 
-func NewSearchRateHandler(
+func NewRateSearchHandler(
 	find func(context.Context, interface{}, interface{}, int64, ...int64) (int64, string, error),
 	logError func(context.Context, string, ...map[string]interface{}),
-) SearchRateHandler {
+) RateSearchHandler {
 	searchModelType := reflect.TypeOf(RateFilter{})
 	modelType := reflect.TypeOf(Rate{})
 	var writeLog func(context.Context, string, string, bool, string) error
@@ -23,10 +23,10 @@ func NewSearchRateHandler(
 	return &searchRateHandler{SearchHandler: searchHandler}
 }
 
-func NewSearchRateCriteriaHandler(
+func NewRateCriteriaSearchHandler(
 	find func(context.Context, interface{}, interface{}, int64, ...int64) (int64, string, error),
 	logError func(context.Context, string, ...map[string]interface{}),
-) SearchRateHandler {
+) RateSearchHandler {
 	searchModelType := reflect.TypeOf(RateFilter{})
 	modelType := reflect.TypeOf(RateCriteria{})
 	var writeLog func(context.Context, string, string, bool, string) error

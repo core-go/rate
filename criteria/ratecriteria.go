@@ -1,4 +1,4 @@
-package ratecriteria
+package criteria
 
 import (
 	"database/sql/driver"

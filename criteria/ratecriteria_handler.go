@@ -1,4 +1,4 @@
-package ratecriteria
+package criteria
 
 import (
 	"context"
