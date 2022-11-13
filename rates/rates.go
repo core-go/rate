@@ -1,4 +1,4 @@
-package criteria
+package rates
 
 import (
 	"database/sql/driver"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type RateCriteria struct {
+type Rates struct {
 	Id          string      `json:"id" gorm:"id"`
 	Author      string      `json:"author" gorm:"author"`
 	Rate        float32     `json:"rate" gorm:"rate"`

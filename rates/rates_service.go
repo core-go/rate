@@ -1,4 +1,4 @@
-package criteria
+package rates
 
 import (
 	"context"
@@ -10,11 +10,11 @@ import (
 	"github.com/lib/pq"
 )
 
-type RateCriteriaService interface {
-	Rate(ctx context.Context, rate *RateCriteria) (int64, error)
+type RatesService interface {
+	Rate(ctx context.Context, rate *Rates) (int64, error)
 }
 
-func NewRateCriteriaService(
+func NewRatesService(
 	db *sql.DB,
 	max int,
 	tableName string,
@@ -38,8 +38,8 @@ func NewRateCriteriaService(
 	infoRateCol string,
 	infoCountCol string,
 	infoScoreCol string,
-) RateCriteriaService {
-	return &rateCriteriaService{
+) RatesService {
+	return &ratesService{
 		DB:        db,
 		Max:       max,
 		TableName: tableName,
@@ -66,7 +66,7 @@ func NewRateCriteriaService(
 	}
 }
 
-type rateCriteriaService struct {
+type ratesService struct {
 	DB  *sql.DB
 	Max int
 
@@ -93,7 +93,7 @@ type rateCriteriaService struct {
 	InfoScoreCol   string
 }
 
-func (s *rateCriteriaService) Rate(ctx context.Context, rate *RateCriteria) (int64, error) {
+func (s *ratesService) Rate(ctx context.Context, rate *Rates) (int64, error) {
 	// check exist
 	var info int
 	query := fmt.Sprintf("select count(*) from %s where %s = $1", s.FullInfoTableName, s.FullInfoIdCol)
@@ -151,7 +151,7 @@ func avg(numbers []float32) float32 {
 	}
 	return res / float32(len(numbers))
 }
-func (s *rateCriteriaService) insert(ctx context.Context, rate *RateCriteria, fullInfoTableName string, isNewInfo bool) (int64, error) {
+func (s *ratesService) insert(ctx context.Context, rate *Rates, fullInfoTableName string, isNewInfo bool) (int64, error) {
 
 	stmts := []string{}
 	params := [][]interface{}{}
@@ -200,7 +200,7 @@ func (s *rateCriteriaService) insert(ctx context.Context, rate *RateCriteria, fu
 		/////
 	}
 }
-func (s *rateCriteriaService) load(ctx context.Context, id string, author string) (*RateCriteria, error) {
+func (s *ratesService) load(ctx context.Context, id string, author string) (*Rates, error) {
 	query := fmt.Sprintf("select %s,%s,%s,%s,%s,%s,%s,%s,histories from %s where %s = $1 and %s = $2",
 		s.IdCol, s.AuthorCol, s.RateCol, s.RatesCol, s.TimeCol, s.ReviewCol, s.UsefulCol, s.ReplyCol,
 		s.TableName, s.IdCol, s.AuthorCol)
@@ -210,7 +210,7 @@ func (s *rateCriteriaService) load(ctx context.Context, id string, author string
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var rate RateCriteria
+		var rate Rates
 		err := rows.Scan(&rate.Id, &rate.Author, &rate.Rate, pq.Array(&rate.Rates), &rate.Time, &rate.Review, &rate.UsefulCount, &rate.ReplyCount, pq.Array(&rate.Histories))
 		if err != nil {
 			return nil, err
@@ -219,7 +219,7 @@ func (s *rateCriteriaService) load(ctx context.Context, id string, author string
 	}
 	return nil, nil
 }
-func (s *rateCriteriaService) insertFullInfo(rate *RateCriteria, fullInfoTableName string, infoTablesName []string) (string, []interface{}) {
+func (s *ratesService) insertFullInfo(rate *Rates, fullInfoTableName string, infoTablesName []string) (string, []interface{}) {
 	rateCols := []string{}
 	ratefulParams := []interface{}{rate.Id, rate.Rate, rate.Rate}
 	rateQuerys := []string{}
@@ -234,7 +234,7 @@ func (s *rateCriteriaService) insertFullInfo(rate *RateCriteria, fullInfoTableNa
 	return stmt3, ratefulParams
 }
 
-func (s *rateCriteriaService) insertInfo(rate *RateCriteria, infoTableNames []string, stmts []string, params [][]interface{}) ([]string, [][]interface{}) {
+func (s *ratesService) insertInfo(rate *Rates, infoTableNames []string, stmts []string, params [][]interface{}) ([]string, [][]interface{}) {
 	var infoParam []interface{}
 	var rateCols []string
 	var rateColParams []interface{}
@@ -250,8 +250,7 @@ func (s *rateCriteriaService) insertInfo(rate *RateCriteria, infoTableNames []st
 				rateColParams = append(rateColParams, 0)
 			}
 		}
-		// insert into companyrateinfo1(id, rate, count, score, rate1, rate2, rate3, rate4, rate5)
-		// 						 values(1,     4,     1,     4,     0,     0,     0,     1,     0)
+
 		rpr := []string{}
 		for i := 1; i <= s.Max; i++ {
 			rpr = append(rpr, fmt.Sprintf(`$%d`, i+3))
@@ -268,7 +267,7 @@ func (s *rateCriteriaService) insertInfo(rate *RateCriteria, infoTableNames []st
 	return stmts, params
 }
 
-func (s *rateCriteriaService) updateFullInfo(rate *RateCriteria, fullInfoTableName string, infoTablesName []string) (string, []interface{}) {
+func (s *ratesService) updateFullInfo(rate *Rates, fullInfoTableName string, infoTablesName []string) (string, []interface{}) {
 	if len(infoTablesName) > 0 {
 		ss := []string{}
 		params := []interface{}{}
@@ -291,7 +290,7 @@ func (s *rateCriteriaService) updateFullInfo(rate *RateCriteria, fullInfoTableNa
 	}
 }
 
-func (s *rateCriteriaService) updateNewInfo(id string, rate float32, tableInfoName string) (string, []interface{}) {
+func (s *ratesService) updateNewInfo(id string, rate float32, tableInfoName string) (string, []interface{}) {
 	sql := fmt.Sprintf("update %s set %s = (%s + $1)/(%s + 1), %s = %s + 1, %s = %s + $1",
 		tableInfoName, s.InfoRateCol, s.InfoScoreCol, s.InfoCountCol, s.InfoCountCol, s.InfoCountCol, s.InfoScoreCol, s.InfoScoreCol)
 	//, %s%d = %s%d + 1 where %s = $2",
@@ -307,7 +306,7 @@ func (s *rateCriteriaService) updateNewInfo(id string, rate float32, tableInfoNa
 	return sql, params
 }
 
-func (s *rateCriteriaService) updateOldInfo(id string, newRate float32, oldRate float32, fullInfotableName string, infoTableNames []string) (string, []interface{}) {
+func (s *ratesService) updateOldInfo(id string, newRate float32, oldRate float32, fullInfotableName string, infoTableNames []string) (string, []interface{}) {
 	delta := newRate - oldRate
 	ss := []string{}
 	params := []interface{}{}
@@ -330,12 +329,11 @@ func (s *rateCriteriaService) updateOldInfo(id string, newRate float32, oldRate 
 	return stmt, params
 }
 
-func (s *rateCriteriaService) update(ctx context.Context, newRate RateCriteria, oldRate float32) (int64, error) {
+func (s *ratesService) update(ctx context.Context, newRate Rates, oldRate float32) (int64, error) {
 	rates := newRate.Rates
 	r := newRate.Rate
 	stmts := []string{}
 	params := [][]interface{}{}
-	// update companyrate set id = $1, author = $2, rate = $3, rates = $4, time = $5, review = $6, replyCol = $7, usefulCol = $8, histories = $9
 
 	stmt1 := fmt.Sprintf("update %s set %s = $1, %s = $2, %s = $3, %s = $4, %s = $5, %s = $6, %s = $7, %s = $8, histories = $9",
 		s.TableName, s.IdCol, s.AuthorCol, s.RateCol, s.RatesCol, s.TimeCol, s.ReviewCol, s.ReplyCol, s.UsefulCol)
@@ -374,7 +372,7 @@ func (s *rateCriteriaService) update(ctx context.Context, newRate RateCriteria, 
 	}
 }
 
-func (s *rateCriteriaService) ExecBatch(ctx context.Context, stmts []string, params [][]interface{}) (int64, error) {
+func (s *ratesService) ExecBatch(ctx context.Context, stmts []string, params [][]interface{}) (int64, error) {
 	var rowResult int64
 	rowResult = 0
 	tx, err := s.DB.BeginTx(ctx, nil)
