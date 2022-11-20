@@ -15,6 +15,7 @@ type RateFilter struct {
 	Time        *search.TimeRange `mapstructure:"time" json:"time" gorm:"column:time" bson:"time" dynamodbav:"time" firestore:"time"`
 	UsefulCount string            `mapstructure:"usefulCount" json:"usefulCount,omitempty" gorm:"column:usefulCount" bson:"usefulCount" dynamodbav:"usefulCount" firestore:"usefulCount"`
 	ReplyCount  string            `mapstructure:"replyCount" json:"replyCount,omitempty" gorm:"column:replyCount" bson:"replyCount" dynamodbav:"replyCount" firestore:"replyCount"`
+	UserId      string            `mapstructure:"userId" json:"userId,omitempty" gorm:"column:userId;primary_key" bson:"userId" dynamodbav:"userId" firestore:"userId" match:"equal" validate:"max=255"`
 }
 
 type RatesFilter struct {
@@ -26,4 +27,5 @@ type RatesFilter struct {
 	Time        *time.Time `mapstructure:"time" json:"time,omitempty" gorm:"column:time" bson:"time,omitempty" dynamodbav:"time,omitempty" firestore:"time,omitempty"`
 	UsefulCount int        `mapstructure:"usefulCount" json:"usefulCount" gorm:"column:usefulCount" bson:"usefulCount,omitempty" dynamodbav:"usefulCount,omitempty" firestore:"usefulCount,omitempty"`
 	ReplyCount  int        `mapstructure:"replyCount" json:"replyCount" gorm:"column:replyCount" bson:"replyCount,omitempty" dynamodbav:"replyCount,omitempty" firestore:"replyCount,omitempty"`
+	UserId      string     `mapstructure:"userId" json:"userId,omitempty" gorm:"column:userId;primary_key" bson:"userId" dynamodbav:"userId" firestore:"userId" match:"equal" validate:"max=255"`
 }

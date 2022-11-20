@@ -16,6 +16,7 @@ type Rate struct {
 	UsefulCount int          `json:"usefulCount" gorm:"column:usefulCount" bson:"usefulCount,omitempty" dynamodbav:"usefulCount,omitempty" firestore:"usefulCount,omitempty"`
 	ReplyCount  int          `json:"replyCount" gorm:"column:replyCount" bson:"replyCount,omitempty" dynamodbav:"replyCount,omitempty" firestore:"replyCount,omitempty"`
 	Histories   *[]Histories `json:"histories" gorm:"column:histories" bson:"histories,omitempty" dynamodbav:"histories,omitempty" firestore:"histories,omitempty"`
+	Disable     *bool        `json:"disable" gorm:"column:disable"`
 }
 
 type Rates struct {
@@ -28,6 +29,7 @@ type Rates struct {
 	UsefulCount int         `json:"usefulCount" gorm:"column:usefulCount" bson:"usefulCount,omitempty" dynamodbav:"usefulCount,omitempty" firestore:"usefulCount,omitempty"`
 	ReplyCount  int         `json:"replyCount" gorm:"column:replyCount" bson:"replyCount,omitempty" dynamodbav:"replyCount,omitempty" firestore:"replyCount,omitempty"`
 	Histories   []Histories `json:"histories" gorm:"column:histories" bson:"histories,omitempty" dynamodbav:"histories,omitempty" firestore:"histories,omitempty"`
+	Disable     *bool       `json:"disable" gorm:"column:-"`
 }
 
 type RateInfo struct {
